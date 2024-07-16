@@ -1,0 +1,20 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.adminRoutes = void 0;
+const express_1 = require("express");
+const adminController_1 = __importDefault(require("../controllers/adminController"));
+const verificationController_1 = __importDefault(require("../controllers/verificationController"));
+const authAdmin_1 = __importDefault(require("../middleware/authAdmin"));
+const router = (0, express_1.Router)();
+const AdminController = new adminController_1.default();
+const VerificationController = new verificationController_1.default();
+router.post('/register', AdminController.signupAdmin.bind(AdminController));
+router.post('/login', VerificationController.adminlogin.bind(VerificationController));
+router.get('/patients', authAdmin_1.default, AdminController.patients.bind(AdminController));
+router.get('/doctors', authAdmin_1.default, AdminController.doctors.bind(AdminController));
+router.patch('/doctor/:userId/blockUnblock', authAdmin_1.default, AdminController.blockUnblockDoctor.bind(AdminController));
+router.patch('/patient/:userId/blockUnblock', authAdmin_1.default, AdminController.blockUnblockPatient.bind(AdminController));
+exports.adminRoutes = router;

@@ -71,9 +71,38 @@ export default class VerificationService implements IverificationService{
       throw err
     }
 }
+async adminotpverify(email: string): Promise<Admin | null> {
+  try{
+    const userData=await this._verificationRepository.otpverifyadmin(email)
+    if(userData){
+      userData.is_Verified=true
+      await userData.save()
+      return userData
+    }else{
+      return null
+    }
+  }catch(err){
+    throw err
+  }
+}
 async doctorresetpassword(email: string, hashedpassword: string): Promise<Doctor | null> {
   try{
     const userData=await this._verificationRepository.doctorresetpassord(email)
+    
+    if(userData){
+      userData.password=hashedpassword
+      await userData.save()      
+      return userData
+    } else{
+      return null
+    }
+  }catch(err){
+    throw err
+  }
+}
+async adminresetpassword(email: string, hashedpassword: string): Promise<Admin | null> {
+  try{
+    const userData=await this._verificationRepository.adminLogin(email)
     
     if(userData){
       userData.password=hashedpassword

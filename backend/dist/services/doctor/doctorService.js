@@ -38,11 +38,12 @@ class doctorService {
                     data.photo = (_c = userData.photo) !== null && _c !== void 0 ? _c : data.photo;
                     data.phone = (_d = userData.phone) !== null && _d !== void 0 ? _d : data.phone;
                     data.workingHospitalContact = (_e = userData.workingHospitalContact) !== null && _e !== void 0 ? _e : data.workingHospitalContact;
-                    data.experienceYears = (_f = userData.experienceYears) !== null && _f !== void 0 ? _f : data.experienceYears;
-                    data.dateOfBirth = (_g = userData.dateOfBirth) !== null && _g !== void 0 ? _g : data.dateOfBirth;
-                    data.gender = (_h = userData.gender) !== null && _h !== void 0 ? _h : data.gender;
-                    data.medicalLicenseNo = (_j = userData.medicalLicenseNo) !== null && _j !== void 0 ? _j : data.medicalLicenseNo;
-                    data.currentWorkingHospital = (_k = userData.currentWorkingHospital) !== null && _k !== void 0 ? _k : data.currentWorkingHospital;
+                    data.experienceYears = userData.experienceYears ? Number(userData.experienceYears) : data.experienceYears;
+                    data.dateOfBirth = (_f = userData.dateOfBirth) !== null && _f !== void 0 ? _f : data.dateOfBirth;
+                    data.gender = (_g = userData.gender) !== null && _g !== void 0 ? _g : data.gender;
+                    data.medicalLicenseNo = (_h = userData.medicalLicenseNo) !== null && _h !== void 0 ? _h : data.medicalLicenseNo;
+                    data.currentWorkingHospital = (_j = userData.currentWorkingHospital) !== null && _j !== void 0 ? _j : data.currentWorkingHospital;
+                    data.expertise = (_k = userData.expertise) !== null && _k !== void 0 ? _k : data.expertise;
                     yield data.save();
                     return data;
                 }
@@ -52,6 +53,78 @@ class doctorService {
             }
             catch (err) {
                 throw err;
+            }
+        });
+    }
+    uploadDocuments(userData) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var _a;
+            try {
+                const data = yield this._doctorRepository.singleDoctor(userData);
+                if (data) {
+                    if (userData.photo) {
+                        data.documents = data.documents || [];
+                        (_a = data.documents) === null || _a === void 0 ? void 0 : _a.push(userData.photo);
+                        data.documents_verified = false;
+                    }
+                    yield data.save();
+                    return data;
+                }
+                else {
+                    return null;
+                }
+            }
+            catch (err) {
+                throw err;
+            }
+        });
+    }
+    deleteDocument(email, index) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const data = yield this._doctorRepository.singleDoctor({ email });
+                if (data) {
+                    data.documents = data.documents || [];
+                    data.documents.splice(index, 1);
+                    yield data.save();
+                    return data;
+                }
+                else {
+                    return null;
+                }
+            }
+            catch (err) {
+                throw err;
+            }
+        });
+    }
+    slotUpdate(id, date, slots) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                return yield this._doctorRepository.slotUpdate(id, date, slots);
+            }
+            catch (err) {
+                throw err;
+            }
+        });
+    }
+    fetchSlots(id, date) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                return yield this._doctorRepository.fetchSlots(id, date);
+            }
+            catch (err) {
+                throw err;
+            }
+        });
+    }
+    appointments(doctorId, date) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                return yield this._doctorRepository.appointments(doctorId, date);
+            }
+            catch (error) {
+                throw error;
             }
         });
     }

@@ -19,6 +19,13 @@ export default class verificatioRepository implements IverificationRepository {
             throw error
         }
     }
+    async otpverifyadmin(email: string): Promise<Admin | null> {
+        try{
+            return await Admins.findOne({email}).exec()
+        }catch(error){
+            throw error
+        }
+    }
     async resetpassord(email: string): Promise<Patient | null> {
         try{
             return await Patients.findOne({email}).exec()

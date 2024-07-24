@@ -14,9 +14,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const adminService_1 = __importDefault(require("../services/admin/adminService"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
+const verificationService_1 = __importDefault(require("../services/patient/verificationService"));
 class adminController {
     constructor() {
         this._adminService = new adminService_1.default();
+        this._verificationService = new verificationService_1.default();
     }
     signupAdmin(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -28,10 +30,14 @@ class adminController {
                 if (adminData == null) {
                     return res.status(400).json({ message: 'User exists' });
                 }
-                return res.status(201).json({
-                    message: "Admin registered successfully and OTP sent",
-                    email
-                });
+                else {
+                    const otp = this._verificationService.generateOtp();
+                    yield this._verificationService.SendOtpEmail(email, 'Your OTP Code', otp);
+                    return res.status(201).json({
+                        message: "Admin registered successfully and OTP sent",
+                        email, otp
+                    });
+                }
             }
             catch (err) {
                 throw err;
@@ -89,6 +95,37 @@ class adminController {
                 }
                 else {
                     return res.status(500).json({ message: 'Internal server error' });
+                }
+            }
+            catch (err) {
+                throw err;
+            }
+        });
+    }
+    documentsVerify(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { userId } = req.params;
+                const data = yield this._adminService.documentsVerify(userId);
+                if (data) {
+                    return res.status(200).json({ message: 'Document Verified' });
+                }
+                else {
+                    return res.status(400).json({ message: 'Internal Error' });
+                }
+            }
+            catch (err) {
+                throw err;
+            }
+        });
+    }
+    bookingList(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { page, date } = req.query;
+                const data = yield this._adminService.bookingList(page, date);
+                if (data) {
+                    return res.status(200).json({ message: 'Bookings', bookings: data.bookings, totalPages: data.totalPages, totalBookings: data.totalBookings });
                 }
             }
             catch (err) {

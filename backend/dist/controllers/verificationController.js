@@ -16,11 +16,9 @@ const verificationService_1 = __importDefault(require("../services/patient/verif
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const console_1 = require("console");
 const jwt_1 = __importDefault(require("../middleware/jwt"));
-const patientRepository_1 = __importDefault(require("../repositories/patientRepository"));
 class verificationController {
     constructor() {
         this._verficationService = new verificationService_1.default();
-        this._patientRepository = new patientRepository_1.default();
     }
     otpverify(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -41,6 +39,20 @@ class verificationController {
             try {
                 const { email } = req.body;
                 const data = yield this._verficationService.optverifydoctor(email);
+                if (data) {
+                    return res.status(200).json({ message: 'verified' });
+                }
+            }
+            catch (err) {
+                throw err;
+            }
+        });
+    }
+    adminotpverify(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { email } = req.body;
+                const data = yield this._verficationService.adminotpverify(email);
                 if (data) {
                     return res.status(200).json({ message: 'verified' });
                 }
@@ -84,7 +96,48 @@ class verificationController {
                 else {
                     const hashedPassword = yield bcrypt_1.default.hash(password, 10);
                     const data = yield this._verficationService.resetpassword(email, hashedPassword);
-                    console.log('hi patients', data);
+                    return res.status(200).json({ message: 'Password changed' });
+                }
+            }
+            catch (_a) {
+                throw console_1.error;
+            }
+        });
+    }
+    adminforgotpassword(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { email } = req.body;
+                const otp = this._verficationService.generateOtp();
+                const data = yield this._verficationService.SendOtpEmail(email, 'This is for your forgot password', otp);
+                return res.status(200).json({ message: 'otp sent', email, otp, isAdmin: true });
+            }
+            catch (error) {
+                throw error;
+            }
+        });
+    }
+    adminresetpassword(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { email, password, oldPassword } = req.body;
+                if (oldPassword) {
+                    const user = yield this._verficationService.adminlogin(email);
+                    if (user) {
+                        const isMatch = yield bcrypt_1.default.compare(oldPassword, user === null || user === void 0 ? void 0 : user.password);
+                        if (isMatch) {
+                            const hashedPassword = yield bcrypt_1.default.hash(password, 10);
+                            const data = yield this._verficationService.adminresetpassword(email, hashedPassword);
+                            return res.status(200).json({ message: 'Password changed' });
+                        }
+                        else {
+                            return res.status(400).json({ message: 'Enter correct old password' });
+                        }
+                    }
+                }
+                else {
+                    const hashedPassword = yield bcrypt_1.default.hash(password, 10);
+                    const data = yield this._verficationService.adminresetpassword(email, hashedPassword);
                     return res.status(200).json({ message: 'Password changed' });
                 }
             }
@@ -124,9 +177,11 @@ class verificationController {
                         }
                     }
                 }
-                const hashedPassword = yield bcrypt_1.default.hash(password, 10);
-                const data = yield this._verficationService.doctorresetpassword(email, hashedPassword);
-                return res.status(200).json({ message: 'Password changed doctor' });
+                else {
+                    const hashedPassword = yield bcrypt_1.default.hash(password, 10);
+                    const data = yield this._verficationService.doctorresetpassword(email, hashedPassword);
+                    return res.status(200).json({ message: 'Password changed' });
+                }
             }
             catch (_a) {
                 throw console_1.error;
@@ -145,7 +200,7 @@ class verificationController {
                         const { name, photo, is_Blocked, _id } = data;
                         if (!is_Blocked) {
                             let tokens = yield (0, jwt_1.default)(data);
-                            return res.status(200).json({ message: 'Patient Logged in', email, name, photo, tokens });
+                            return res.status(200).json({ message: 'Patient Logged in', email, name, photo, _id: _id, tokens });
                         }
                         else {
                             return res.status(403).json({ message: 'User is blocked' });
@@ -174,10 +229,10 @@ class verificationController {
                     const password2 = data.password;
                     const isMatch = yield bcrypt_1.default.compare(password, password2);
                     if (isMatch) {
-                        const { name, photo, is_Blocked, is_Verified, dateOfBirth, address, currentWorkingHospital, gender, expertise, workingDays, phone } = data;
+                        const { name, photo, is_Blocked, is_Verified, dateOfBirth, address, currentWorkingHospital, gender, expertise, workingDays, phone, workingHospitalContact, languageKnown, medicalLicenseNo, experienceYears, documents, _id } = data;
                         if (!is_Blocked) {
                             let tokens = yield (0, jwt_1.default)(data);
-                            return res.status(200).json({ message: 'Doctor Logged in', email, name, photo, tokens, dateOfBirth, address, currentWorkingHospital, gender, expertise, workingDays, phone, is_Verified });
+                            return res.status(200).json({ message: 'Doctor Logged in', email, name, photo, is_Blocked, is_Verified, dateOfBirth, address, currentWorkingHospital, gender, expertise, workingDays, phone, workingHospitalContact, languageKnown, medicalLicenseNo, experienceYears, documents, _id, tokens });
                         }
                         else {
                             return res.status(403).json({ message: 'User is blocked' });
@@ -221,6 +276,19 @@ class verificationController {
             catch (err) {
                 console.error('Error during patient login', err);
                 next(err);
+            }
+        });
+    }
+    otpresend(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { email } = req.query;
+                const otp = this._verficationService.generateOtp();
+                const data = yield this._verficationService.SendOtpEmail(email, 'This is your new Otp', otp);
+                return res.status(200).json({ message: 'otp sent', otp });
+            }
+            catch (error) {
+                throw error;
             }
         });
     }

@@ -69,7 +69,6 @@ const generateJwt = (data: Payload): Promise<Tokens> => {
             generateRefreshToken(payload)
               .then((refreshToken) => {
                 tokens.refreshToken = refreshToken;
-
                 resolve(tokens);
               })
               .catch((err) => {

@@ -87,5 +87,33 @@ class adminService {
             }
         });
     }
+    documentsVerify(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const data = yield this._doctorRepository.fetchDoctor(id);
+                if (data) {
+                    data.documents_verified = true;
+                    yield data.save();
+                    return data;
+                }
+                else {
+                    return null;
+                }
+            }
+            catch (err) {
+                throw err;
+            }
+        });
+    }
+    bookingList(page, date) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                return yield this._adminRepository.bookingList(page, date);
+            }
+            catch (err) {
+                throw err;
+            }
+        });
+    }
 }
 exports.default = adminService;

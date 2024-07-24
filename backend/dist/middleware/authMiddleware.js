@@ -123,6 +123,8 @@ const refreshAccessToken = (req, res) => {
             const decodedRefreshToken = jsonwebtoken_1.default.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET); // decoding the refresh token
             verifyUser(decodedRefreshToken)
                 .then((user) => __awaiter(void 0, void 0, void 0, function* () {
+                console.log('hai');
+                console.log(user);
                 if (user && !(user === null || user === void 0 ? void 0 : user.is_Blocked)) {
                     const newAccessToken = yield renewAccessToken(decodedRefreshToken === null || decodedRefreshToken === void 0 ? void 0 : decodedRefreshToken.userId);
                     res.status(200).send({ newToken: newAccessToken });

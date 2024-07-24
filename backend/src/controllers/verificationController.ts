@@ -6,19 +6,17 @@ import VerificationService from "../services/patient/verificationService";
 import { IverificationController } from "./interfaces/IverificationController";
 import bcrypt from 'bcrypt'
 import { error } from "console";
-import { generate } from "otp-generator";
 import generateJwt from "../middleware/jwt";
 import { Payload } from "../middleware/jwt";
-import patientService from "../services/patient/patientService";
-import PatientRepository from "../repositories/patientRepository";
+
 
 
 export default class verificationController implements IverificationController{
     private _verficationService:VerificationService;
-    private _patientRepository:PatientRepository
+    
     constructor(){
         this._verficationService=new VerificationService()
-        this._patientRepository=new PatientRepository()
+        
     }
     async otpverify(req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>, res: Response<any, Record<string, any>>, next: NextFunction) {
         try{
@@ -37,6 +35,17 @@ export default class verificationController implements IverificationController{
             const data=await this._verficationService.optverifydoctor(email)
             if(data){
             return res.status(200).json({message:'verified'})
+            }
+        }catch(err){
+            throw err
+        }
+    }
+    async adminotpverify(req: Request, res: Response, next: NextFunction) {
+        try{
+            const {email}=req.body
+            const data=await this._verficationService.adminotpverify(email)
+            if(data){
+                return res.status(200).json({message:'verified'})
             }
         }catch(err){
             throw err
@@ -70,7 +79,40 @@ export default class verificationController implements IverificationController{
             }else{
                 const hashedPassword=await bcrypt.hash(password,10)
                 const data=await this._verficationService.resetpassword(email,hashedPassword)
-                console.log('hi patients',data);
+                return res.status(200).json({message:'Password changed'})
+            } 
+        }catch{
+            throw error
+        }
+    }
+    async adminforgotpassword(req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>, res: Response<any, Record<string, any>>, next: NextFunction){
+        try{
+            const {email}=req.body
+            const otp= this._verficationService.generateOtp()
+            const data=await this._verficationService.SendOtpEmail(email,'This is for your forgot password',otp)
+            return res.status(200).json({message:'otp sent',email,otp,isAdmin:true})
+        }catch(error){
+            throw error
+        }    
+    }
+    async adminresetpassword(req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>, res: Response<any, Record<string, any>>, next: NextFunction) {
+        try{
+            const {email,password,oldPassword}=req.body            
+            if(oldPassword){
+                const user=await this._verficationService.adminlogin(email)
+                if(user){
+                    const isMatch=await bcrypt.compare(oldPassword,user?.password)
+                    if(isMatch){
+                        const hashedPassword=await bcrypt.hash(password,10)
+                        const data=await this._verficationService.adminresetpassword(email,hashedPassword)
+                        return res.status(200).json({message:'Password changed'})
+                    }else{
+                        return res.status(400).json({message:'Enter correct old password'})
+                    }
+                }
+            }else{
+                const hashedPassword=await bcrypt.hash(password,10)
+                const data=await this._verficationService.adminresetpassword(email,hashedPassword)
                 return res.status(200).json({message:'Password changed'})
             } 
         }catch{
@@ -89,7 +131,7 @@ export default class verificationController implements IverificationController{
     }
     async doctorresetpassword(req: Request, res: Response, next: NextFunction) {
         try{
-            const {email,password,oldPassword}=req.body
+            const {email,password,oldPassword}=req.body            
             if(oldPassword){
                 const user=await this._verficationService.doctorlogin(email)
                 if(user){
@@ -102,10 +144,11 @@ export default class verificationController implements IverificationController{
                         return res.status(400).json({message:'Enter correct old password'})
                     }
                 }
-            }
-            const hashedPassword=await bcrypt.hash(password,10)
-            const data=await this._verficationService.doctorresetpassword(email,hashedPassword)
-            return res.status(200).json({message:'Password changed doctor'})
+            }else{
+                const hashedPassword=await bcrypt.hash(password,10)
+                const data=await this._verficationService.doctorresetpassword(email,hashedPassword)
+                return res.status(200).json({message:'Password changed'})
+            } 
         }catch{
             throw error
         }
@@ -123,7 +166,7 @@ export default class verificationController implements IverificationController{
                     const { name, photo,is_Blocked,_id } = data;
                     if(!is_Blocked){
                         let tokens=await generateJwt(data as Payload)
-                        return res.status(200).json({ message: 'Patient Logged in', email, name, photo,tokens });
+                        return res.status(200).json({ message: 'Patient Logged in', email, name, photo,_id:_id,tokens });
                    }else{
                     return res.status(403).json({ message: 'User is blocked' });
                    }
@@ -149,10 +192,10 @@ export default class verificationController implements IverificationController{
                 const isMatch = await bcrypt.compare(password, password2);
     
                 if (isMatch) {
-                    const { name, photo,is_Blocked,is_Verified,dateOfBirth,address,currentWorkingHospital,gender,expertise,workingDays,phone } = data;
+                    const { name, photo,is_Blocked,is_Verified,dateOfBirth,address,currentWorkingHospital,gender,expertise,workingDays,phone,workingHospitalContact,languageKnown,medicalLicenseNo,experienceYears,documents,_id } = data;
                     if(!is_Blocked){
                         let tokens=await generateJwt(data as Payload)
-                        return res.status(200).json({ message: 'Doctor Logged in', email, name, photo,tokens,dateOfBirth,address,currentWorkingHospital,gender,expertise,workingDays,phone,is_Verified });
+                        return res.status(200).json({ message: 'Doctor Logged in',email,name, photo,is_Blocked,is_Verified,dateOfBirth,address,currentWorkingHospital,gender,expertise,workingDays,phone ,workingHospitalContact,languageKnown,medicalLicenseNo,experienceYears,documents,_id,tokens});
                    }else{
                     return res.status(403).json({ message: 'User is blocked' });
                    }
@@ -192,5 +235,15 @@ export default class verificationController implements IverificationController{
             next(err);
         }
      
+    }
+    async otpresend(req: Request, res: Response, next: NextFunction){
+        try{
+            const {email}=req.query
+            const otp= this._verficationService.generateOtp()
+            const data=await this._verficationService.SendOtpEmail(email as string,'This is your new Otp',otp)
+            return res.status(200).json({message:'otp sent',otp})
+        }catch(error){
+            throw error
+        }
     }
 }

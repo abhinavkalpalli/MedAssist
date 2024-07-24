@@ -3,12 +3,17 @@ import { Request, Response, NextFunction } from "express";
 import Patients, { Patient } from "../models/patientModel";
 import dotenv from 'dotenv'
 import { join } from 'path';
+import { Doctor } from "../models/doctorModel";
+import { Admin } from "../models/adminModel";
 dotenv.config({ path: join('./src', '.env') });
 // Define interfaces for decoded token and user
 interface DecodedToken {
   userId?: string;
   email?: string;
 }
+
+type User = Doctor|Admin|Patient;
+
 
 declare global {
   namespace Express {
@@ -132,6 +137,9 @@ export const refreshAccessToken = (req: Request, res: Response) => {
 
       verifyUser(decodedRefreshToken)
         .then(async (user) => {
+          console.log('hai');
+          console.log(user);
+          
           if (user && !user?.is_Blocked) {
             const newAccessToken = await renewAccessToken(
               decodedRefreshToken?.userId as string

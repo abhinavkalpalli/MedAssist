@@ -85,10 +85,46 @@ class VerificationService {
             }
         });
     }
+    adminotpverify(email) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const userData = yield this._verificationRepository.otpverifyadmin(email);
+                if (userData) {
+                    userData.is_Verified = true;
+                    yield userData.save();
+                    return userData;
+                }
+                else {
+                    return null;
+                }
+            }
+            catch (err) {
+                throw err;
+            }
+        });
+    }
     doctorresetpassword(email, hashedpassword) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const userData = yield this._verificationRepository.doctorresetpassord(email);
+                if (userData) {
+                    userData.password = hashedpassword;
+                    yield userData.save();
+                    return userData;
+                }
+                else {
+                    return null;
+                }
+            }
+            catch (err) {
+                throw err;
+            }
+        });
+    }
+    adminresetpassword(email, hashedpassword) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const userData = yield this._verificationRepository.adminLogin(email);
                 if (userData) {
                     userData.password = hashedpassword;
                     yield userData.save();

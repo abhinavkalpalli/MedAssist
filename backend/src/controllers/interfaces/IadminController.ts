@@ -6,5 +6,6 @@ export interface IadminController{
     doctors(req:Request,res:Response,next:NextFunction):void
     blockUnblockDoctor(req:Request,res:Response,next:NextFunction):void
     blockUnblockPatient(req:Request,res:Response,next:NextFunction):void
-
+    documentsVerify(req:Request,res:Response,next:NextFunction):void
+    bookingList(req:Request,res:Response,next:NextFunction):void
 }

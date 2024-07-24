@@ -16,4 +16,9 @@ router.post('/forgotpassword', VerificationController.forgotpassword.bind(Verifi
 router.post('/resetpassword', VerificationController.resetpassword.bind(VerificationController));
 router.post('/login', VerificationController.patientlogin.bind(VerificationController));
 router.put('/editPatient', PatientController.editPatient.bind(PatientController));
+router.get('/doctors', PatientController.doctors.bind(PatientController));
+router.get('/bookings', PatientController.getbookings.bind(PatientController));
+router.post('/postBooking', PatientController.postBooking.bind(PatientController));
+router.get('/:patientId/yourBooking', PatientController.yourBooking.bind(PatientController));
+router.get('/cancelAppointment/:id', PatientController.cancelAppointment.bind(PatientController));
 exports.patientRoutes = router;

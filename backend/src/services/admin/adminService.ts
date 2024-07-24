@@ -5,6 +5,7 @@ import PatientRepository from "../../repositories/patientRepository";
 import {  Patient } from "../../models/patientModel";
 import { Doctor } from "../../models/doctorModel";
 import doctorRepository from "../../repositories/doctorRespository";
+import { IBooking } from "../../models/bookingModel";
 
 export default class adminService implements IadminService{
     private _adminRepository:adminRepository
@@ -63,5 +64,26 @@ export default class adminService implements IadminService{
         }catch(err){
             throw err
         }   
+    }
+    async documentsVerify(id: string): Promise<Doctor | null> {
+        try{
+            const data=await this._doctorRepository.fetchDoctor(id)
+            if(data){
+                data.documents_verified=true
+                await data.save()
+                return data
+            }else{
+                return null
+            }
+        }catch(err){
+            throw err
+        }
+    }
+    async bookingList( page: string, date: string): Promise<{ bookings: IBooking[]; totalBookings: number; totalPages: number; } | null> {
+        try{
+            return await this._adminRepository.bookingList( page, date)
+        }catch(err){
+            throw err
+        }
     }
 }

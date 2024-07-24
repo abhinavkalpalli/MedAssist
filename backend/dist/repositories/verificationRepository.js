@@ -36,6 +36,16 @@ class verificatioRepository {
             }
         });
     }
+    otpverifyadmin(email) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                return yield adminModel_1.default.findOne({ email }).exec();
+            }
+            catch (error) {
+                throw error;
+            }
+        });
+    }
     resetpassord(email) {
         return __awaiter(this, void 0, void 0, function* () {
             try {

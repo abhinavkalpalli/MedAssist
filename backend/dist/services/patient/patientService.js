@@ -13,9 +13,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const patientRepository_1 = __importDefault(require("../../repositories/patientRepository"));
+const doctorRespository_1 = __importDefault(require("../../repositories/doctorRespository"));
 class patientService {
     constructor() {
         this._patientRepository = new patientRepository_1.default();
+        this._doctorRepository = new doctorRespository_1.default();
     }
     signupPatient(userData) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -37,6 +39,64 @@ class patientService {
                     data.email = (_b = userData.email) !== null && _b !== void 0 ? _b : data.email;
                     data.photo = (_c = userData.photo) !== null && _c !== void 0 ? _c : data.photo;
                     yield data.save();
+                    return data;
+                }
+                else {
+                    return null;
+                }
+            }
+            catch (err) {
+                throw err;
+            }
+        });
+    }
+    doctors(query, page, limit) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                return yield this._doctorRepository.fetchDoctorsForPatient(query, page, limit);
+            }
+            catch (err) {
+                throw err;
+            }
+        });
+    }
+    bookings(doctorId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                return yield this._patientRepository.bookings(doctorId);
+            }
+            catch (err) {
+                throw err;
+            }
+        });
+    }
+    postbookings(userData) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                return yield this._patientRepository.postbookings(userData);
+            }
+            catch (err) {
+                throw err;
+            }
+        });
+    }
+    yourBooking(patientId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                return yield this._patientRepository.yourBooking(patientId);
+            }
+            catch (err) {
+                throw err;
+            }
+        });
+    }
+    cancelAppointment(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const data = yield this._patientRepository.findAppointments(id);
+                if (data) {
+                    data.status = 'Cancelled';
+                    data.save();
                     return data;
                 }
                 else {

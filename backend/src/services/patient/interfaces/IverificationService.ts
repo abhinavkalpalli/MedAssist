@@ -11,12 +11,14 @@ export interface IverificationService {
 
     optverify(email:string):Promise<Patient|null>
     optverifydoctor(email:string):Promise<Patient|null>
+    adminotpverify(email:string):Promise<Admin|null>
     resetpassword(email:string,hashedpassword:string):Promise<Patient|null>
     doctorresetpassword(email:string,hashedpassword:string):Promise<Doctor|null>
     patientlogin(email:string):Promise<Patient|null>
     doctorlogin(email:string):Promise<Doctor|null>
     adminlogin(email:string):Promise<Admin|null>
     singlePatient(email:string):Promise<Patient|null>
+    adminresetpassword(email:string,hashedpassword:string):Promise<Admin|null>
 
   }
   

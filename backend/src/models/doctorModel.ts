@@ -67,5 +67,13 @@ const doctorSchema = new Schema<Doctor>({
     }],
     photo: { type: String,default:'' }
 }, { timestamps: true });
+export interface DoctorQuery {
+    is_Verified: boolean;
+    is_Blocked: boolean;
+    documents_verified: boolean;
+    experienceYears?: number;
+    gender?: string;
+    name?: { $regex: string, $options: string };
+  }
 
 export default model<Doctor>('Doctors', doctorSchema);
